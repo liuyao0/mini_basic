@@ -1,0 +1,30 @@
+This is an BASIC interpreter.
+Commands to control the BASIC interpreter:
+RUN
+This command starts program execution beginning at the lowest-numbered line.
+LOAD
+This command loads a file containing statements and commands.
+CLEAR 
+This command deletes the program so you can start entering a new one.
+HELP
+This command shows the help information.
+QUIT
+Typing QUIT exits from the BASIC interpreter.
+Statements supported in the BASIC interpreter:
+VAR means a variable.
+EXP means an expression which is a legal combination of operators \"+\", \"-\", \"*\", \"/\", \"**\", \"(\", \")\", variables and constants.
+REM
+This statement is used for comments. Any text on the line after the keyword REM is ignored.
+LET VAR=EXP
+This statement evalute the EXP and assign the result to VAR.
+PRINT EXP
+The effect of this statement is to print the value of the 
+expression.
+INPUT VAR
+The effect of this statement is to print a prompt consisting of the string \" ? \" and then to read in a value to be stored in the variable.
+GOTO N
+This statement forces the program continues from line N instead of continuing with the next statement.
+IF IF EXP1 op EXP2 THEN N 
+This statement provides conditional control.\"op\" is \">\", \"<\" or \"=\", if EXP1 op EXP2 is true, the program continues from line N instead of continuing with the next statement.
+END
+Marks the end of the program.Execution halts when this line is reached.
