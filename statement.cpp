@@ -1,5 +1,4 @@
 #include "statement.h"
-#include <windows.h>
 #include <QDebug>
 bool Statement::waitForInput=false;
 //Statement-------------------------------------
@@ -104,7 +103,6 @@ void InputStmt::excute(Widget *widget,EvaluationContext &context)
     while(waitForInput)
     {
         QCoreApplication::processEvents();
-        Sleep(20);
     }
     QString content=widget->ui->lineEdit->text();
     widget->ui->lineEdit->clear();
