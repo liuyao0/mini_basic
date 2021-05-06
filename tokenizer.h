@@ -10,6 +10,7 @@ enum tokenState{expression,instr};
 class Tokenizer
 {
     set<string> allOrder;
+    //
 public:
     Tokenizer();
     void addOrder(string str);
