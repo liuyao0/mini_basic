@@ -5,10 +5,11 @@
 #include <cstring>
 #include <map>
 #include <stack>
+#include <QString>
 using std::stack;
 using std::string;
 using std::map;
-enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND };
+enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND ,STRING};
 class EvaluationContext;
 //Exception type.
 //Being thrown if a invalid expressions appears.
@@ -152,6 +153,17 @@ public:
 private:
    string op;
    Expression *lhs, *rhs;
+};
+class StringExp:public Expression
+{
+public:
+    StringExp();
+    StringExp(QString str);
+    virtual ~StringExp();
+    virtual int eval(EvaluationContext & context);
+    virtual string toString();
+private:
+    string val;
 };
 
 /*

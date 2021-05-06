@@ -22,6 +22,7 @@ private:
     list<Statement*> stats;
     Tokenizer tokenizer;
     EvaluationContext context;
+    list<int> wrongLine;
 public:
     static int PC;
     program();

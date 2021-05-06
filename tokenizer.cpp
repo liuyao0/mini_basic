@@ -1,5 +1,5 @@
 #include "tokenizer.h"
-
+#include <iostream>
 void Tokenizer::trim(string &str)
 {
     while((!str.empty())&&(std::isspace(str[0])))
@@ -36,10 +36,42 @@ string* Tokenizer::tokenize(string str,int &num)
     list<string> tokens;
     string* result;
     trim(str);
+    
     while(str.length()>0)
     {
-
+        //std::cout<<str<<std::endl;
         trim(str);
+        if(str[0]==',')
+        {
+            str.erase(0,1);
+            continue;
+        }
+        if(str[0]=='"'&&str.length()>1)
+        {
+            int i;
+            for(i=1;i<str.length();i++)
+                if(str[i]=='"')
+                {
+                    tokens.push_back(str.substr(0,i+1));
+                    str.erase(0,i+1);
+                    break;
+                }
+            if(i!=str.length())
+                continue;
+        }
+        if(str[0]=='\''&&str.length()>1)
+        {
+            int i;
+            for(i=1;i<str.length();i++)
+                if(str[i]=='"')
+                {
+                    tokens.push_back(str.substr(0,i+1));
+                    str.erase(0,i+1);
+                    break;
+                }
+            if(i!=str.length())
+                continue;
+        }
         if(str.substr(0,1)==">"||str.substr(0,1)=="="||str.substr(0,1)=="<")
         {
             tokens.push_back(str.substr(0,1));
@@ -75,7 +107,7 @@ string* Tokenizer::tokenize(string str,int &num)
                 break;
             }
 
-            if((temp.substr(i-1,1)==">"||temp.substr(i-1,1)=="="||temp.substr(i-1,1)=="<"))
+            if(temp.substr(i-1,1)==">"||temp.substr(i-1,1)=="="||temp.substr(i-1,1)=="<"||temp.substr(i-1,1)==",")
             {
                 tokens.push_back(temp.substr(0,i-1));
                 str.erase(0,i-1);

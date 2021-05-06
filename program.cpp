@@ -1,5 +1,7 @@
 #include "program.h"
 #include <QDebug>
+#include <QTextBrowser>
+#include <QTextBlock>
 int program::PC=0;
 
 program::program()
@@ -24,13 +26,14 @@ program::~program()
 //Remove all statements in the program.
 //Clear the symbol table.
 void program::clear()
-{
-    context.clear();
+{ 
     if(stats.empty())
         return;
     for(auto iter=stats.begin();iter!=stats.end();iter++)
         delete (*iter);
+    context.clear();
     stats.clear();
+    wrongLine.clear();
 }
 
 //class:program
@@ -168,9 +171,11 @@ Statement* program::parse_line(Widget *w,stc *sentence)
 void program::load(Buffer *buffer,Widget *w)
 {
     clear();
-    auto iter=buffer->L.begin();    
+    auto iter=buffer->L.begin();
+    int i=0;
     while(iter!=buffer->L.end())
     {
+        i++;
         Statement *stat;
         try
         {
@@ -185,11 +190,11 @@ void program::load(Buffer *buffer,Widget *w)
             str+=QString::fromStdString(iter->str);
             str+="'.";
             w->ui->textEdit_tree->append(str);
-
             EndStmt *end_;
             end_=new EndStmt;
             end_->lineno=iter->lineno;
             stats.push_back(end_);
+            wrongLine.emplace_back(i);
 
         }
         catch (InvalidExpression(InvalidExp))
@@ -204,6 +209,7 @@ void program::load(Buffer *buffer,Widget *w)
             end_=new EndStmt;
             end_->lineno=iter->lineno;
             stats.push_back(end_);
+            wrongLine.emplace_back(i);
         }
         catch (LinenoOutofRange)
         {
@@ -215,6 +221,7 @@ void program::load(Buffer *buffer,Widget *w)
             end_=new EndStmt;
             end_->lineno=iter->lineno;
             stats.push_back(end_);
+            wrongLine.emplace_back(i);
         }
         catch (InvalidIdentify(identify))
         {
@@ -227,6 +234,7 @@ void program::load(Buffer *buffer,Widget *w)
             end_=new EndStmt;
             end_->lineno=iter->lineno;
             stats.push_back(end_);
+            wrongLine.emplace_back(i);
         }
         catch(std::out_of_range)
         {
@@ -240,11 +248,24 @@ void program::load(Buffer *buffer,Widget *w)
             end_=new EndStmt;
             end_->lineno=iter->lineno;
             stats.push_back(end_);
+            wrongLine.emplace_back(i);
         }
         iter++;
     }
 }
 //Run the program
+
+int getLineNo(Statement* stmt,list<Statement*> &stmts)
+{
+    int i=0;
+    for(auto iter=stmts.begin();iter!=stmts.end();iter++)
+    {
+        i++;
+        if(stmt==*iter)
+            return i;
+    }
+    return 0;
+}
 void program::run(Widget *w)
 {
 
@@ -259,14 +280,36 @@ void program::run(Widget *w)
         try
         {
             (*iter)->excute(w,context);
+
+            if((*iter)->type==END)
+                break;
+            if(PC!=0)
+            {
+                auto jumpto=stats.begin();
+                for(;jumpto!=stats.end();jumpto++)
+                    if((*jumpto)->getlineno()==PC)
+                        break;
+                if(jumpto==stats.end())
+                {
+                    QString str="Lineno '";
+                    str+=QString::number(PC);
+                    str+="' doesn't exist.";
+                    w->ui->textEdit_output->append(str);
+                }
+                iter=jumpto;
+            }
+            else
+                iter++;
         }
         catch (Dividedbyzero)
         {
             QString str="Line ";
             str+=QString::number((*iter)->lineno);
             str+=", divided by zero!";
+
+            wrongLine.emplace_back(getLineNo(*iter,stats));
             w->ui->textEdit_output->append(str);
-            return;
+            break;
         }
         catch (UnknownIdentify(unknownIdentify))
         {
@@ -275,32 +318,34 @@ void program::run(Widget *w)
             str+=", unknown Identify '";
             str+=QString::fromStdString(unknownIdentify.inf);
             str+="'.";
+
+            wrongLine.emplace_back(getLineNo(*iter,stats));
             w->ui->textEdit_output->append(str);
-            return;
+            break;
         }
+    }
 
-
-        if((*iter)->type==END)
-            return;
-        if(PC!=0)
+    if(!wrongLine.empty())
+    {
+        QTextEdit *code = w->ui->textEdit_code;
+        QTextCursor cursor(code->textCursor());
+        //w->ui->textEdit_code->setTextCursor(cursor);
+        QList<QTextEdit::ExtraSelection> extras;
+        QVector<QPair<int, QColor>> highlights;
+        for(auto iter=wrongLine.begin();iter!=wrongLine.end();iter++)
+            highlights.push_back(QPair<int,QColor>(*iter,QColor(255,100,100)));
+        for(auto &line:highlights)
         {
-            auto jumpto=stats.begin();
-            for(;jumpto!=stats.end();jumpto++)
-                if((*jumpto)->getlineno()==PC)
-                    break;
-            if(jumpto==stats.end())
-            {
-                QString str="Lineno '";
-                str+=QString::number(PC);
-                str+="' doesn't exist.";
-                w->ui->textEdit_output->append(str);
-            }
-
-
-            iter=jumpto;
+            QTextEdit::ExtraSelection h;
+            h.cursor=cursor;
+            int pos=w->ui->textEdit_code->document()->findBlockByNumber(line.first-1).position();
+            h.cursor.setPosition(pos);
+            h.cursor.movePosition(QTextCursor::StartOfLine);
+            h.cursor.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
+            h.format.setBackground(line.second);
+            extras.append(h);
         }
-        else
-            iter++;
+        code->setExtraSelections(extras);
     }
 }
 
