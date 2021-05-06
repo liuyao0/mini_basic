@@ -171,6 +171,8 @@ private:
  * ------------------------
  * This class encapsulates the information that the evaluator needs to
  * know in order to evaluate an expression.
+ *
+ *
  */
 
 class EvaluationContext
