@@ -154,12 +154,12 @@ private:
    string op;
    Expression *lhs, *rhs;
 };
-class StringExp:public Expression
+class StringConstantExp:public Expression
 {
 public:
-    StringExp();
-    StringExp(QString str);
-    virtual ~StringExp();
+    StringConstantExp();
+    StringConstantExp(QString str);
+    virtual ~StringConstantExp();
     virtual int eval(EvaluationContext & context);
     virtual string toString();
 private:
@@ -177,11 +177,16 @@ class EvaluationContext
 {
 public:
    void setValue(string var, int value);
+   void setStringValue(string var,string value);
    int getValue(string var);
+   string getStringValue(string var);
    bool isDefined(string var);
+   bool isDefined_String(string var);
    void clear();
 private:
    map<string,int> symbolTable;
+   map<string,string> symbolTable_string;
 };
+
 
 #endif // EXP_H

@@ -223,9 +223,19 @@ string CompoundExp::toString()
 //be created.
 void EvaluationContext::setValue(string var, int value)
 {
+    auto iter=symbolTable_string.find(var);
+    if(iter!=symbolTable_string.end())
+        symbolTable_string.erase(iter);
     symbolTable[var]=value;
 }
 
+void EvaluationContext::setStringValue(string var, string value)
+{
+    auto iter=symbolTable.find(var);
+    if(iter!=symbolTable.end())
+        symbolTable.erase(iter);
+    symbolTable_string[var]=value;
+}
 //class:EvaluationContext
 //type:int
 //argument:
@@ -240,11 +250,18 @@ int EvaluationContext::getValue(string var)
         var=var.substr(1);
         neg=true;
     }
-
     auto iter=symbolTable.find(var);
     if(iter==symbolTable.end())
         throw(UnknownIdentify(var));
     return neg?-iter->second:iter->second;
+}
+
+string EvaluationContext::getStringValue(string var)
+{
+    auto iter=symbolTable_string.find(var);
+    if(iter==symbolTable_string.end())
+        throw(UnknownIdentify(var));
+    return iter->second;
 }
 
 
@@ -252,6 +269,14 @@ bool EvaluationContext::isDefined(string var)
 {
     auto iter=symbolTable.find(var);
     if(iter==symbolTable.end())
+        return false;
+    return true;
+}
+
+bool EvaluationContext::isDefined_String(string var)
+{
+    auto iter=symbolTable_string.find(var);
+    if(iter==symbolTable_string.end())
         return false;
     return true;
 }
