@@ -92,7 +92,46 @@ PrintStmt::~PrintStmt()
 {
     delete exp;
 }
+//Printf--------------------------------------------
+PrintfStmt::PrintfStmt(){}
+void PrintfStmt::excute(Widget *widget,EvaluationContext &context)
+{
+    int argc=argv.size(),i=0;
+    string str=format;
+    for(i=0;i<argc;i++)
+    {
+        string::size_type pos=str.find("{}");
+        if(pos==str.npos)
+            throw(InvalidExpression(format));
+        str.erase(pos,2);
+        if(context.isDefined_String(argv[i]))
+        {
+            str.insert(pos,context.getStringValue(argv[i]));
+            continue;
+        }
+        else
+        {
+            Expression* exp=Expression::ExpfromString(argv[i]);
+            str.insert(pos,std::to_string(exp->eval(context)));
+            delete exp;
+            continue;
+        }
+    }
+    widget->ui->textEdit_output->append(QString::fromStdString(str));
+}
 
+void PrintfStmt::printToUi(Widget *widget)
+{
+
+    string content=std::to_string(lineno);
+    content+=" PRINTF";
+    content+="\n\t";
+    content+="\"";
+    content+=format;
+    content+="\"";
+    widget->ui->textEdit_tree->append(QString::fromStdString(content));
+}
+PrintfStmt::~PrintfStmt(){}
 //InputStmt-------------------------------------
 InputStmt::InputStmt(string s):var(s)
 {

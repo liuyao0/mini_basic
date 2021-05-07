@@ -5,13 +5,14 @@
 #include <QLineEdit>
 #include <string>
 #include <QString>
+#include <QVector>
 #include <ui_widget.h>
 #include "exp.h"
 #include "widget.h"
 
 using std::string;
 class InvalidInput{};
-enum StatementType {REM,LET,PRINT,INPUT_,INPUTS,IF,GOTO,END};
+enum StatementType {REM,LET,PRINT,PRINTF,INPUT_,INPUTS,IF,GOTO,END};
 class program;
 class Widget;
 class LinenoOutofRange {};
@@ -59,6 +60,18 @@ public:
     virtual void printToUi(Widget *widget);
     ~PrintStmt();
 };
+
+class PrintfStmt:public Statement
+{
+public:
+    PrintfStmt();
+    string format;
+    QVector<string> argv;
+    virtual void excute(Widget *widget,EvaluationContext &context);
+    virtual void printToUi(Widget *widget);
+    ~PrintfStmt();
+};
+
 
 class InputStmt:public Statement
 {
