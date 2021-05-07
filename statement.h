@@ -11,7 +11,7 @@
 
 using std::string;
 class InvalidInput{};
-enum StatementType {REM,LET,PRINT,INPUT_,IF,GOTO,END};
+enum StatementType {REM,LET,PRINT,INPUT_,INPUTS,IF,GOTO,END};
 class program;
 class Widget;
 class LinenoOutofRange {};
@@ -77,6 +77,17 @@ public slots:
 
 
 };
+class InputsStmt:public Statement
+{
+public:
+    bool FinishEdit;
+    InputsStmt(string s);
+    string var;
+    virtual void excute(Widget *widget,EvaluationContext &context);
+    virtual void printToUi(Widget *widget);
+    ~InputsStmt();
+};
+
 class GotoStmt:public Statement
 {
 public:

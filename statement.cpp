@@ -44,7 +44,10 @@ LetStmt::LetStmt()
 }
 void LetStmt::excute(Widget *widget,EvaluationContext &context)
 {
-    context.setValue(var,exp->eval(context));
+    if(exp->type()==CONSTANT_STRING||exp->type()==IDENTIFIER_STRING)
+        context.setStringValue(var,exp->eval_string(context));
+    else
+        context.setValue(var,exp->eval(context));
 }
 
 void LetStmt::printToUi(Widget *widget)
@@ -129,6 +132,35 @@ InputStmt::~InputStmt()
 {
 
 }
+//InputsStmt-------------------------------------
+InputsStmt::InputsStmt(string s):var(s)
+{
+    type=INPUTS;
+};
+void InputsStmt::excute(Widget *widget,EvaluationContext &context)
+{
+    widget->ui->lineEdit->setText("? ");
+    waitForInput=true;
+    while(waitForInput)
+    {
+        QCoreApplication::processEvents();
+    }
+    QString content=widget->ui->lineEdit->text();
+    widget->ui->lineEdit->clear();
+    if(!(content[0]=='?'&&content[1]==' '))
+        throw(InvalidInput());
+    content.remove(0,2);
+    context.setStringValue(var,content.toStdString());
+}
+void InputsStmt::printToUi(Widget *widget)
+{
+    string content=std::to_string(lineno);
+    content+=" INPUTS";
+    content+="\n\t";
+    content+=var;
+    widget->ui->textEdit_tree->append(QString::fromStdString(content));
+}
+InputsStmt::~InputsStmt(){}
 //GotoStmt-------------------------------------
 GotoStmt::GotoStmt()
 {
@@ -209,7 +241,8 @@ EndStmt::EndStmt()
     type=END;
 }
 void EndStmt::excute(Widget *widget,EvaluationContext &context)
-{}
+{
+}
 void EndStmt::printToUi(Widget *widget)
 {
     string content=std::to_string(lineno);

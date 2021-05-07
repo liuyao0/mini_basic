@@ -12,6 +12,7 @@ program::program()
     tokenizer.addOrder(string("IF"));
     tokenizer.addOrder(string("GOTO"));
     tokenizer.addOrder(string("END"));
+    tokenizer.addOrder(string("INPUTS"));
     PC=0;
 }
 
@@ -89,6 +90,25 @@ Statement* program::parse_line(Widget *w,stc *sentence)
     if(n==4&&token[0]=="LET"&&token[2]=="=")
     {
         string var=token[1];
+        if(Expression::IllegalIdentify(var))
+            throw(InvalidIdentify(var));
+        if((token[3][0]=='"'&&token[3][token[3].length()-1]=='"')||
+           (token[3][0]=='\''&&token[3][token[3].length()-1]=='\''))
+        {
+            string str=token[3];
+            str.erase(0,1);
+            str.erase(str.length()-1,1);
+            if(str.find('"')!=str.npos||str.find('\'')!=str.npos)
+                throw(InvalidExpression(token[3]));
+            ConstantStringExp* exp;
+            exp=new ConstantStringExp(str);
+            LetStmt* let=new LetStmt;
+            let->var=var;
+            let->exp=exp;
+            let->lineno=ln;
+            let->printToUi(w);
+            return let;
+       }
         Expression* exp=Expression::ExpfromString(token[3]);
         LetStmt* let=new LetStmt;
         let->var=var;
@@ -108,6 +128,17 @@ Statement* program::parse_line(Widget *w,stc *sentence)
         input->lineno=ln;
         input->printToUi(w);
         return input;
+    }
+    //INPUTS--------------------------------------------------------------
+    if(n==2&&token[0]=="INPUTS")
+    {
+        string var=token[1];
+        if(Expression::IllegalIdentify(var))
+             throw(InvalidIdentify(var));
+        InputsStmt *inputs=new InputsStmt(token[1]);
+        inputs->lineno=ln;
+        inputs->printToUi(w);
+        return inputs;
     }
     //PRINT--------------------------------------------------------------
     if(n==2&&token[0]=="PRINT")

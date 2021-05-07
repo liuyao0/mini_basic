@@ -32,7 +32,14 @@ Expression *Expression::getRHS()
 {
     return nullptr;
 }
-
+int Expression::eval(EvaluationContext &context)
+{
+    return 0;
+}
+string Expression::eval_string(EvaluationContext &context)
+{
+    return "";
+}
 //class:Expression
 //type:bool
 //argument:
@@ -210,7 +217,32 @@ string CompoundExp::toString()
     }
     return str;
 }
-
+// StringConstantExp--------------------------------------------
+ConstantStringExp::ConstantStringExp(){}
+ConstantStringExp::ConstantStringExp(string str):val(str){}
+ConstantStringExp::~ConstantStringExp(){}
+ExpressionType ConstantStringExp::type(){return CONSTANT_STRING;}
+string ConstantStringExp::eval_string(EvaluationContext & context)
+{
+    return val;
+}
+string ConstantStringExp::toString()
+{
+    return "\""+val+"\"";
+}
+//StringIdentifyExp
+IdentifierStringExp::IdentifierStringExp(){}
+IdentifierStringExp::IdentifierStringExp(string str):var(str){}
+IdentifierStringExp::~IdentifierStringExp(){}
+ExpressionType IdentifierStringExp::type(){return IDENTIFIER_STRING;}
+string IdentifierStringExp::eval_string(EvaluationContext &context)
+{
+    return context.getStringValue(var);
+}
+string IdentifierStringExp::toString()
+{
+    return var;
+}
 
 //EvaluationContext--------------------------------------------
 

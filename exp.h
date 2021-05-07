@@ -9,7 +9,7 @@
 using std::stack;
 using std::string;
 using std::map;
-enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND ,STRING};
+enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND ,CONSTANT_STRING,IDENTIFIER_STRING};
 class EvaluationContext;
 //Exception type.
 //Being thrown if a invalid expressions appears.
@@ -57,8 +57,8 @@ public:
    //argument:
    //   EvaluationContext & context: the symbol table of the program
    //Evaluate the expression.
-   virtual int eval(EvaluationContext & context) = 0;
-
+   virtual int eval(EvaluationContext & context);
+   virtual string eval_string(EvaluationContext & context);
    //class:Expression
    //type:string
    //argument:
@@ -72,6 +72,7 @@ public:
    virtual ExpressionType type() = 0;
 
 /* Getter methods for convenience */
+
    virtual int getConstantValue();
    virtual string getIdentifierName();
    virtual string getOperator();
@@ -154,16 +155,38 @@ private:
    string op;
    Expression *lhs, *rhs;
 };
-class StringConstantExp:public Expression
+/*
+ * Class: ConstantStringExp
+ * ------------------
+ * This subclass represents a constant string.
+ */
+class ConstantStringExp:public Expression
 {
 public:
-    StringConstantExp();
-    StringConstantExp(QString str);
-    virtual ~StringConstantExp();
-    virtual int eval(EvaluationContext & context);
+    ConstantStringExp();
+    ConstantStringExp(string str);
+    virtual ExpressionType type();
+    virtual ~ConstantStringExp();
+    virtual string eval_string(EvaluationContext & context);
     virtual string toString();
 private:
     string val;
+};
+/*
+ * Class: IdentifierStringExp
+ * ------------------
+ * This subclass represents a constant string.
+ */
+class IdentifierStringExp:public Expression{
+public:
+    IdentifierStringExp();
+    IdentifierStringExp(string str);
+    virtual ~IdentifierStringExp();
+    virtual ExpressionType type();
+    virtual string eval_string(EvaluationContext & context);
+    virtual string toString();
+private:
+    string var;
 };
 
 /*
