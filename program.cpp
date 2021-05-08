@@ -6,7 +6,7 @@ int program::PC=0;
 
 program::program()
 {
-    tokenizer.addOrder(string("PRINT"));
+    tokenizer.addOrder(string("PRINTF"));
     tokenizer.addOrder(string("INPUT"));
     tokenizer.addOrder(string("LET"));
     tokenizer.addOrder(string("IF"));
@@ -50,7 +50,7 @@ Statement* program::parse_line(Widget *w,stc *sentence)
         throw(LinenoOutofRange());
     int n;
     string stat=sentence->str;
-    string token[6];
+    string token[100];
 
     //REM---------------------------------------------------------------
     Tokenizer::trim(stat);
@@ -153,11 +153,30 @@ Statement* program::parse_line(Widget *w,stc *sentence)
     //PRINTF
     if(n>1&&token[0]=="PRINTF")
     {
-        PrintfStmt *prtf=new PrintfStmt;
+        PrintfStmt *prtf;
+        string format=token[1],str=format;
+        string::size_type k;
+        int m=0;
+        if(format.length()<2)
+            throw(WrongStatement());
+        if(!((format[0]=='\''&&format[format.length()-1]=='\'')||(format[0]=='"'&&format[format.length()=='"'])))
+            throw(WrongStatement());
+        while((k=str.find("{}"))!=str.npos)
+        {
+            m++;
+            str.erase(k,2);
+        }
+        if(m!=n-2)
+            throw(WrongStatement());
+        format.erase(0,1);
+        format.erase(format.length()-1,1);
         prtf=new PrintfStmt;
-        prtf->format=token[1];
         for(int i=2;i<n;i++)
+        {
+            Expression::ExpfromString(token[i]);
             prtf->argv.push_back(token[i]);
+        }
+        prtf->format=format;
         prtf->lineno=ln;
         prtf->printToUi(w);
         return prtf;
@@ -394,12 +413,10 @@ void program::run(Widget *w)
 
 bool program::doImmCmd(string cmd,Widget *w)
 {
-    string *pretoken,token[4];
+    string *pretoken,token[100];
     int n;
     Tokenizer::trim(cmd);
     pretoken=tokenizer.tokenize(cmd,n);
-    if(n>4)
-        return false;
     for(int i=0;i<n;i++)
         token[i]=pretoken[i];
     delete []pretoken;
@@ -424,6 +441,16 @@ bool program::doImmCmd(string cmd,Widget *w)
         input.excute(w,context);
         return true;
     }
+    //INPUTS--------------------------------------------------------------
+    if(n==2&&token[0]=="INPUTS")
+    {
+        if(Expression::IllegalIdentify(token[1]))
+            throw(InvalidIdentify(token[1]));
+        InputsStmt inputs(token[1]);
+        inputs.lineno=0;
+        inputs.excute(w,context);
+        return true;
+    }
     //PRINT--------------------------------------------------------------
     if(n==2&&token[0]=="PRINT")
     {
@@ -432,6 +459,36 @@ bool program::doImmCmd(string cmd,Widget *w)
         prt.exp=exp;
         prt.lineno=0;
         prt.excute(w,context);
+        return true;
+    }
+    //PRINTF-------------------------------------------------------------
+    if(n>2&&token[0]=="PRINTF")
+    {
+        string format=token[1],str=format;
+        string::size_type k;
+        int m=0;
+        if(format.length()<2)
+            throw(WrongStatement());
+        if(!((format[0]=='\''&&format[format.length()-1]=='\'')||(format[0]=='"'&&format[format.length()=='"'])))
+            throw(WrongStatement());
+        while((k=str.find("{}"))!=str.npos)
+        {
+            m++;
+            str.erase(k,2);
+        }
+        if(m!=n-2)
+            throw(WrongStatement());
+        format.erase(0,1);
+        format.erase(format.length()-1,1);
+        PrintfStmt prtf;
+        for(int i=2;i<n;i++)
+        {
+            Expression::ExpfromString(token[i]);
+            prtf.argv.push_back(token[i]);
+        }
+        prtf.format=format;
+        prtf.lineno=0;
+        prtf.excute(w,context);
         return true;
     }
     return false;
