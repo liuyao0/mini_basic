@@ -151,6 +151,17 @@ Statement* program::parse_line(Widget *w,stc *sentence)
         return prt;
     }
     //PRINTF
+    if(n>1&&token[0]=="PRINTF")
+    {
+        PrintfStmt *prtf=new PrintfStmt;
+        prtf=new PrintfStmt;
+        prtf->format=token[1];
+        for(int i=2;i<n;i++)
+            prtf->argv.push_back(token[i]);
+        prtf->lineno=ln;
+        prtf->printToUi(w);
+        return prtf;
+    }
     //GOTO------------------------------------------------------------
     if(n==2&&token[0]=="GOTO")
     {
