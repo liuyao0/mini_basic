@@ -151,7 +151,6 @@ Statement* program::parse_line(Widget *w,stc *sentence)
         return prt;
     }
     //PRINTF
-    if(n==)
     //GOTO------------------------------------------------------------
     if(n==2&&token[0]=="GOTO")
     {
