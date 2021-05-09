@@ -20,9 +20,11 @@ class program
 {
 private:
     list<Statement*> stats;
+    list<Statement*>::iterator currentStat;
     Tokenizer tokenizer;
     EvaluationContext context;
     list<int> wrongLine;
+    bool onDebug;
 public:
     static int PC;
     program();
@@ -30,8 +32,10 @@ public:
     void clear();
     void load(Buffer *buffer,Widget *w);
     Statement* parse_line(Widget *w,stc *sentence);
+    void setHighlight(Widget* w,Statement *stat=NULL);
     void run(Widget *w);
     bool doImmCmd(string cmd,Widget *w);
+    void debug(Widget *w);
 };
 
 #endif // PROGRAM_H

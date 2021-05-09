@@ -14,6 +14,7 @@ program::program()
     tokenizer.addOrder(string("END"));
     tokenizer.addOrder(string("INPUTS"));
     PC=0;
+    onDebug=false;
 }
 
 program::~program()
@@ -384,31 +385,11 @@ void program::run(Widget *w)
             wrongLine.emplace_back(getLineNo(*iter,stats));
             w->ui->textEdit_output->append(str);
             break;
-        }
+        } 
     }
+    setHighlight(w);
 
-    if(!wrongLine.empty())
-    {
-        QTextEdit *code = w->ui->textEdit_code;
-        QTextCursor cursor(code->textCursor());
-        //w->ui->textEdit_code->setTextCursor(cursor);
-        QList<QTextEdit::ExtraSelection> extras;
-        QVector<QPair<int, QColor>> highlights;
-        for(auto iter=wrongLine.begin();iter!=wrongLine.end();iter++)
-            highlights.push_back(QPair<int,QColor>(*iter,QColor(255,100,100)));
-        for(auto &line:highlights)
-        {
-            QTextEdit::ExtraSelection h;
-            h.cursor=cursor;
-            int pos=w->ui->textEdit_code->document()->findBlockByNumber(line.first-1).position();
-            h.cursor.setPosition(pos);
-            h.cursor.movePosition(QTextCursor::StartOfLine);
-            h.cursor.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);
-            h.format.setBackground(line.second);
-            extras.append(h);
-        }
-        code->setExtraSelections(extras);
-    }
+
 }
 
 bool program::doImmCmd(string cmd,Widget *w)
@@ -492,4 +473,52 @@ bool program::doImmCmd(string cmd,Widget *w)
         return true;
     }
     return false;
+}
+
+void program::setHighlight(Widget* w,Statement *stat)
+{
+    QTextEdit *code = w->ui->textEdit_code;
+    QTextCursor cursor(code->textCursor());
+    QList<QTextEdit::ExtraSelection> extras;
+    QVector<QPair<int, QColor>> highlights;
+    QTextEdit::ExtraSelection h;
+    h.cursor=cursor;
+
+    for(auto iter=wrongLine.begin();iter!=wrongLine.end();iter++)
+        highlights.push_back(QPair<int,QColor>(*iter,QColor(255,100,100)));
+    if(stat)
+    {
+        int i=0;
+        for(auto iter=stats.begin();iter!=stats.end();iter++,i++)
+            if(*iter==stat)
+                break;
+        highlights.push_back(QPair<int,QColor>(i,QColor(100,100,255)));
+    }
+    for(auto &line:highlights)
+    {
+        int pos=w->ui->textEdit_code->document()->findBlockByNumber(line.first-1).position();
+        h.cursor.setPosition(pos);
+        h.cursor.movePosition(QTextCursor::StartOfLine);
+        h.cursor.movePosition(QTextCursor::EndOfLine);
+        h.format.setProperty(QTextFormat::FullWidthSelection,true);
+        h.format.setBackground(line.second);
+        extras.append(h);
+    }
+    code->setExtraSelections(extras);
+}
+
+void program::debug(Widget *w)
+{
+    if(!onDebug)
+    {
+        if(stats.empty())
+            return;
+        currentStat=stats.begin();
+        onDebug=true;
+    }
+    else
+    {
+
+    }
+
 }
