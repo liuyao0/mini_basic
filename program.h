@@ -33,8 +33,8 @@ private:
     Tokenizer tokenizer;
     EvaluationContext context;
     list<int> wrongLine;
-    bool onDebug;
 public:
+    bool onDebug;
     static int PC;
     program();
     ~program();
@@ -45,6 +45,7 @@ public:
     void run(Widget *w);
     bool doImmCmd(string cmd,Widget *w);
     void debug(Widget *w);
+    void printVar(Widget *w);
 };
 
 #endif // PROGRAM_H

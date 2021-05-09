@@ -316,6 +316,7 @@ bool EvaluationContext::isDefined_String(string var)
 void EvaluationContext::clear()
 {
     symbolTable.clear();
+    symbolTable_string.clear();
 }
 
 //--------------------------------------------------------------

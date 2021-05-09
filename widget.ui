@@ -221,7 +221,7 @@
     </font>
    </property>
   </widget>
-  <widget class="QTextEdit" name="textEdit_tree_2">
+  <widget class="QTextEdit" name="textEdit_var">
    <property name="geometry">
     <rect>
      <x>410</x>

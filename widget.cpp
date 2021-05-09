@@ -28,7 +28,8 @@ void Widget::dispatchCmd(string &cmd)
 {
     if(cmd=="LOAD"||cmd=="load")
     {
-        on_pushButton_load_clicked();
+        if(!pgm->onDebug)
+            on_pushButton_load_clicked();
         return;
     }
 
@@ -40,9 +41,14 @@ void Widget::dispatchCmd(string &cmd)
 
     if(cmd=="CLEAR"||cmd=="clear")
     {
-        on_pushButton_clear_clicked();
+        if(!pgm->onDebug)
+            on_pushButton_clear_clicked();
+        return;
     }
-
+    if(cmd=="DEBUG"||cmd=="debug"||cmd=="STEP"||cmd=="step")
+    {
+        on_pushButton_debug_clicked();
+    }
     if(cmd=="HELP"||cmd=="help")
     {
         showhelp();
@@ -91,6 +97,7 @@ void Widget::on_pushButton_load_clicked()
     }
     ui->textEdit_output->clear();
     ui->textEdit_tree->clear();
+    ui->textEdit_var->clear();
 
 }
 
@@ -107,6 +114,8 @@ void Widget::on_lineEdit_returnPressed()
     try
     {
         flag=pgm->doImmCmd(cmd,this);
+        if(flag)
+            pgm->printVar(this);
     }
     catch (InvalidInput)
     {
@@ -159,15 +168,24 @@ void Widget::on_pushButton_clear_clicked()
     ui->textEdit_code->clear();
     ui->textEdit_output->clear();
     ui->textEdit_tree->clear();
+    ui->textEdit_var->clear();
 }
 
 
 void Widget::on_pushButton_run_clicked()
 {
+    if(pgm->onDebug)
+    {
+        while(pgm->onDebug)
+           on_pushButton_debug_clicked();
+        return;
+    }
+    ui->textEdit_var->clear();
     ui->textEdit_output->clear();
     ui->textEdit_tree->clear();
     pgm->load(buffer,this);
     pgm->run(this);
+    pgm->printVar(this);
 }
 
 void Widget::showhelp()
@@ -186,12 +204,27 @@ void Widget::showhelp()
         qs=in.readLine();
         ui->textEdit_output->append(qs);
     }
-
     file.close();
 
 }
 
 void Widget::on_pushButton_debug_clicked()
 {
+    if(!pgm->onDebug)
+    {
+        ui->textEdit_output->clear();
+        ui->textEdit_tree->clear();
+        pgm->load(buffer,this);
+        ui->textEdit_tree->clear();
+        ui->pushButton_clear->setDisabled(true);
+        ui->pushButton_load->setDisabled(true);
+        pgm->PC=0;
+    }
     pgm->debug(this);
+    pgm->printVar(this);
+    if(!pgm->onDebug)
+    {
+        ui->pushButton_clear->setDisabled(false);
+        ui->pushButton_load->setDisabled(false);
+    }
 }

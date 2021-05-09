@@ -6,6 +6,7 @@ int program::PC=0;
 
 program::program()
 {
+    tokenizer.addOrder(string("PRINT"));
     tokenizer.addOrder(string("PRINTF"));
     tokenizer.addOrder(string("INPUT"));
     tokenizer.addOrder(string("LET"));
@@ -29,6 +30,7 @@ program::~program()
 //Clear the symbol table.
 void program::clear()
 { 
+    onDebug=false;
     if(stats.empty())
         return;
     for(auto iter=stats.begin();iter!=stats.end();iter++)
@@ -331,19 +333,20 @@ int getLineNo(Statement* stmt,list<Statement*> &stmts)
 }
 void program::run(Widget *w)
 {
-
+    setHighlight(w);
+    onDebug=false;
     if(stats.empty())
         return;
     auto iter=stats.begin();
     while(true)
     {
+        printVar(w);
         if(iter==stats.end())
             break;
         PC=0;
         try
         {
             (*iter)->excute(w,context);
-
             if((*iter)->type==END)
                 break;
             if(PC!=0)
@@ -389,9 +392,15 @@ void program::run(Widget *w)
             w->ui->textEdit_output->append(str);
             iter=stats.end();
         }
+        catch(InvalidInput)
+        {
+            QString str="Invalid input!";
+            w->ui->textEdit_output->append(str);
+            break;
+        }
     }
-    setHighlight(w);
 
+    setHighlight(w);
 
 }
 
@@ -422,7 +431,15 @@ bool program::doImmCmd(string cmd,Widget *w)
             throw(InvalidIdentify(token[1]));
         InputStmt input(token[1]);
         input.lineno=0;
-        input.excute(w,context);
+        try
+        {
+            input.excute(w,context);
+        }
+        catch (InvalidInput)
+        {
+
+        }
+
         return true;
     }
     //INPUTS--------------------------------------------------------------
@@ -432,7 +449,14 @@ bool program::doImmCmd(string cmd,Widget *w)
             throw(InvalidIdentify(token[1]));
         InputsStmt inputs(token[1]);
         inputs.lineno=0;
-        inputs.excute(w,context);
+        try
+        {
+           inputs.excute(w,context);
+        }
+        catch (InvalidInput) {
+
+        }
+
         return true;
     }
     //PRINT--------------------------------------------------------------
@@ -491,7 +515,7 @@ void program::setHighlight(Widget* w,Statement *stat)
         highlights.push_back(QPair<int,QColor>(*iter,QColor(255,100,100)));
     if(stat)
     {
-        int i=0;
+        int i=1;
         for(auto iter=stats.begin();iter!=stats.end();iter++,i++)
             if(*iter==stat)
                 break;
@@ -509,7 +533,29 @@ void program::setHighlight(Widget* w,Statement *stat)
     }
     code->setExtraSelections(extras);
 }
-
+void program::printVar(Widget *w)
+{
+    w->ui->textEdit_var->clear();
+    QString str;
+    for(auto iter=context.symbolTable.begin();
+        iter!=context.symbolTable.end();
+        iter++)
+    {
+        str=QString::fromStdString(iter->first);
+        str+=":";
+        str+=QString::number(iter->second);
+        w->ui->textEdit_var->append(str);
+    }
+    for(auto iter=context.symbolTable_string.begin();
+        iter!=context.symbolTable_string.end();
+        iter++)
+    {
+        str=QString::fromStdString(iter->first);
+        str+=":";
+        str+=QString::fromStdString(iter->second);
+        w->ui->textEdit_var->append(str);
+    }
+}
 void program::debug(Widget *w)
 {
     bool wrongFlag=false;
@@ -520,6 +566,9 @@ void program::debug(Widget *w)
             return;
         currentStat=stats.begin();
         onDebug=true;
+        w->ui->textEdit_tree->clear();
+        (*currentStat)->printToUi(w);
+        setHighlight(w,*currentStat);
     }
     else
     {
@@ -528,7 +577,16 @@ void program::debug(Widget *w)
             PC=0;
             if(currentStat!=stats.end())
             {
+
                 (*currentStat)->excute(w,context);
+                if((*currentStat)->type==END)
+                {
+                    onDebug=false;
+                    PC=0;
+                    QMessageBox::information(NULL, "INF","Program terminates normally.",QMessageBox::Yes);
+                    setHighlight(w);
+                    return;
+                }
                 if(PC!=0)
                 {
                     auto jumpto=stats.begin();
@@ -541,7 +599,18 @@ void program::debug(Widget *w)
                 }
                 else
                     currentStat++;
+                if(currentStat==stats.end())
+                {
+                    onDebug=false;
+                    PC=0;
+                    QMessageBox::information(NULL, "INF","Program terminates normally.",QMessageBox::Yes);
+                    setHighlight(w);
+                    return;
+                }
             }
+            w->ui->textEdit_tree->clear();
+            (*currentStat)->printToUi(w);
+            setHighlight(w,*currentStat);
         }
         catch (Dividedbyzero)
         {
@@ -564,7 +633,11 @@ void program::debug(Widget *w)
             wrongInf+=QString::number(PC);
             wrongInf+="' doesn't exist.";
             wrongLine.emplace_back(getLineNo(*currentStat,stats));
-            w->ui->textEdit_output->append(wrongInf);
+            wrongFlag=true;
+        }
+        catch(InvalidInput)
+        {
+            wrongInf="Invalid input!";
             wrongFlag=true;
         }
         if(wrongFlag)
@@ -572,9 +645,10 @@ void program::debug(Widget *w)
             wrongLine.emplace_back(getLineNo(*currentStat,stats));
             w->ui->textEdit_output->append(wrongInf);
             QMessageBox::information(NULL, "Error", wrongInf,QMessageBox::Yes);
+            setHighlight(w);
             onDebug=false;
             PC=0;
         }
     }
-    setHighlight(w,*currentStat);
+
 }

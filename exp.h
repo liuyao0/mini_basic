@@ -208,10 +208,8 @@ public:
    bool isDefined(string var);
    bool isDefined_String(string var);
    void clear();
-private:
    map<string,int> symbolTable;
    map<string,string> symbolTable_string;
 };
-
 
 #endif // EXP_H

@@ -142,10 +142,18 @@ void InputStmt::excute(Widget *widget,EvaluationContext &context)
     widget->ui->lineEdit->setText("? ");
     bool toIntOK;
     waitForInput=true;
+    widget->ui->pushButton_clear->setDisabled(true);
+    widget->ui->pushButton_run->setDisabled(true);
+    widget->ui->pushButton_debug->setDisabled(true);
+    widget->ui->pushButton_load->setDisabled(true);
     while(waitForInput)
     {
         QCoreApplication::processEvents();
     }
+    widget->ui->pushButton_clear->setDisabled(false);
+    widget->ui->pushButton_run->setDisabled(false);
+    widget->ui->pushButton_debug->setDisabled(false);
+    widget->ui->pushButton_load->setDisabled(false);
     QString content=widget->ui->lineEdit->text();
     widget->ui->lineEdit->clear();
     if(!(content[0]=='?'&&content[1]==' '))
@@ -180,14 +188,26 @@ void InputsStmt::excute(Widget *widget,EvaluationContext &context)
 {
     widget->ui->lineEdit->setText("? ");
     waitForInput=true;
+    widget->ui->pushButton_clear->setDisabled(true);
+    widget->ui->pushButton_run->setDisabled(true);
+    widget->ui->pushButton_debug->setDisabled(true);
+    widget->ui->pushButton_load->setDisabled(true);
+
     while(waitForInput)
     {
         QCoreApplication::processEvents();
     }
+    widget->ui->pushButton_clear->setDisabled(false);
+    widget->ui->pushButton_run->setDisabled(false);
+    widget->ui->pushButton_debug->setDisabled(false);
+    widget->ui->pushButton_load->setDisabled(false);
     QString content=widget->ui->lineEdit->text();
     widget->ui->lineEdit->clear();
     if(!(content[0]=='?'&&content[1]==' '))
         throw(InvalidInput());
+    for(int i=0;i<content.length();i++)
+        if(content[i]=='\''||content[i]=='"')
+            throw(InvalidInput());
     content.remove(0,2);
     context.setStringValue(var,content.toStdString());
 }
