@@ -10,6 +10,15 @@ using std::list;
 class stc;
 class Widget;
 class WrongStatement{};
+class NoExistLineno
+{
+private:
+    int lineno;
+public:
+    NoExistLineno(int l):lineno(l){}
+    int getLlineno(){return lineno;}
+};
+
 class Statement;
 //the class implement the basic interpreter.
 //stats stores all statements.

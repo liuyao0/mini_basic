@@ -353,12 +353,7 @@ void program::run(Widget *w)
                     if((*jumpto)->getlineno()==PC)
                         break;
                 if(jumpto==stats.end())
-                {
-                    QString str="Lineno '";
-                    str+=QString::number(PC);
-                    str+="' doesn't exist.";
-                    w->ui->textEdit_output->append(str);
-                }
+                    throw(NoExistLineno(PC));
                 iter=jumpto;
             }
             else
@@ -381,11 +376,19 @@ void program::run(Widget *w)
             str+=", unknown Identify '";
             str+=QString::fromStdString(unknownIdentify.inf);
             str+="'.";
-
             wrongLine.emplace_back(getLineNo(*iter,stats));
             w->ui->textEdit_output->append(str);
             break;
-        } 
+        }
+        catch(NoExistLineno(noExistLineno))
+        {
+            QString str="Lineno '";
+            str+=QString::number(PC);
+            str+="' doesn't exist.";
+            wrongLine.emplace_back(getLineNo(*iter,stats));
+            w->ui->textEdit_output->append(str);
+            iter=stats.end();
+        }
     }
     setHighlight(w);
 
@@ -509,6 +512,8 @@ void program::setHighlight(Widget* w,Statement *stat)
 
 void program::debug(Widget *w)
 {
+    bool wrongFlag=false;
+    QString wrongInf="Line ";
     if(!onDebug)
     {
         if(stats.empty())
@@ -518,7 +523,58 @@ void program::debug(Widget *w)
     }
     else
     {
+        try
+        {
+            PC=0;
+            if(currentStat!=stats.end())
+            {
+                (*currentStat)->excute(w,context);
+                if(PC!=0)
+                {
+                    auto jumpto=stats.begin();
+                    for(;jumpto!=stats.end();jumpto++)
+                        if((*jumpto)->getlineno()==PC)
+                            break;
+                    if(jumpto==stats.end())
+                         throw(NoExistLineno(PC));
+                    currentStat=jumpto;
+                }
+                else
+                    currentStat++;
+            }
+        }
+        catch (Dividedbyzero)
+        {
+            wrongInf+=QString::number((*currentStat)->lineno);
+            wrongInf+=", divided by zero!";
+            wrongFlag=true;
 
+        }
+        catch (UnknownIdentify(unknownIdentify))
+        {
+            wrongInf+=QString::number((*currentStat)->lineno);
+            wrongInf+=", unknown Identify '";
+            wrongInf+=QString::fromStdString(unknownIdentify.inf);
+            wrongInf+="'.";
+            wrongFlag=true;
+        }
+        catch(NoExistLineno(noExistLineno))
+        {
+            wrongInf="Lineno '";
+            wrongInf+=QString::number(PC);
+            wrongInf+="' doesn't exist.";
+            wrongLine.emplace_back(getLineNo(*currentStat,stats));
+            w->ui->textEdit_output->append(wrongInf);
+            wrongFlag=true;
+        }
+        if(wrongFlag)
+        {
+            wrongLine.emplace_back(getLineNo(*currentStat,stats));
+            w->ui->textEdit_output->append(wrongInf);
+            QMessageBox::information(NULL, "Error", wrongInf,QMessageBox::Yes);
+            onDebug=false;
+            PC=0;
+        }
     }
-
+    setHighlight(w,*currentStat);
 }

@@ -190,3 +190,8 @@ void Widget::showhelp()
     file.close();
 
 }
+
+void Widget::on_pushButton_debug_clicked()
+{
+    pgm->debug(this);
+}
