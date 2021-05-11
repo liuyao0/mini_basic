@@ -1,3 +1,7 @@
+#IF "help.txt" CAN'T BE OPENED
+#PLEASE CHANGE THE WORKING DIRCTORY TO ./PROJ1
+#AND DON'T USE CHINESE PATH NAME!!
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

@@ -129,6 +129,17 @@ void PrintfStmt::printToUi(Widget *widget)
     content+="\"";
     content+=format;
     content+="\"";
+    for(int i=0;i<argv.length();i++)
+    {
+        Expression *exp;
+        content+="\n";
+        exp=Expression::ExpfromString(argv[i]);
+        if(exp->type()!=COMPOUND)
+            content+="\t";
+        content+=exp->toString();
+        delete exp;
+        content+="\n";
+    }
     widget->ui->textEdit_tree->append(QString::fromStdString(content));
 }
 PrintfStmt::~PrintfStmt(){}

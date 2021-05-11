@@ -181,41 +181,26 @@ Expression* CompoundExp::getRHS()
 }
 string CompoundExp::toString()
 {
-    int depth=1;
-    string str="";
-    queue<Expression*> Q; //used to traverse the expression tree.
-    Expression *last;
-    Expression *nlast;
-    last=nlast=this;
-    Q.push(this);
-    while(!Q.empty())
-    {
-        Expression* exp=Q.front();
-        Q.pop();
-        for(int i=0;i<depth;i++) //indentation
-            str+='\t';
-        if(exp->type()==COMPOUND)
-        {
-            str+=exp->getOperator();
-            str+='\n';
-            Q.push(exp->getLHS());
-            nlast=exp->getLHS();
-            Q.push(exp->getRHS());
-            nlast=exp->getRHS();
-        }
-        else
-        {
-            str+=exp->toString();
-            str+='\n';
-        }
-
-        if(last==exp) //if need to open a new line.
-        {
-            last=nlast;
-            depth++;
-        }
-    }
+    string str;
+    preOrder(str,1,this);
     return str;
+}
+void CompoundExp::preOrder(string &str,int depth,Expression *exp)
+{
+    for(int i=0;i<depth;i++) //indentation
+        str+='\t';
+    if(exp->type()==COMPOUND)
+    {
+        str+=exp->getOperator();
+        str+='\n';
+        preOrder(str,depth+1,exp->getLHS());
+        preOrder(str,depth+1,exp->getRHS());
+    }
+    else
+    {
+        str+=exp->toString();
+        str+='\n';
+    }
 }
 // StringConstantExp--------------------------------------------
 ConstantStringExp::ConstantStringExp(){}
@@ -361,6 +346,9 @@ void trim(string &str)
 Expression* Expression::ExpfromString(string str)
 {
     int i=0;
+    while((i=str.find_first_of(' '))!=str.npos)
+        str.erase(i,1);
+    i=0;
     while(i<str.length())
     {
         if(i==0&&str[i]=='-')

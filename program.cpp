@@ -584,7 +584,7 @@ void program::debug(Widget *w)
                 {
                     onDebug=false;
                     PC=0;
-                    QMessageBox::information(NULL, "INF","Program terminates normally./Program runs to a wrong statement.",QMessageBox::Yes);
+                    QMessageBox::information(NULL, "INF","Program terminates normally (or runs to a wrong statement).",QMessageBox::Yes);
                     setHighlight(w);
                     return;
                 }

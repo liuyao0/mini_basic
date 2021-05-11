@@ -150,6 +150,7 @@ public:
    virtual string getOperator();
    virtual Expression *getLHS();
    virtual Expression *getRHS();
+   void preOrder(string &str,int depth,Expression *exp);
 
 private:
    string op;
