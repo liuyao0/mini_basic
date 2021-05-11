@@ -542,7 +542,7 @@ void program::printVar(Widget *w)
         iter++)
     {
         str=QString::fromStdString(iter->first);
-        str+=":";
+        str+=":INT=";
         str+=QString::number(iter->second);
         w->ui->textEdit_var->append(str);
     }
@@ -551,8 +551,9 @@ void program::printVar(Widget *w)
         iter++)
     {
         str=QString::fromStdString(iter->first);
-        str+=":";
+        str+=":STR=\"";
         str+=QString::fromStdString(iter->second);
+        str+="\"";
         w->ui->textEdit_var->append(str);
     }
 }
@@ -583,7 +584,7 @@ void program::debug(Widget *w)
                 {
                     onDebug=false;
                     PC=0;
-                    QMessageBox::information(NULL, "INF","Program terminates normally.",QMessageBox::Yes);
+                    QMessageBox::information(NULL, "INF","Program terminates normally./Program runs to a wrong statement.",QMessageBox::Yes);
                     setHighlight(w);
                     return;
                 }

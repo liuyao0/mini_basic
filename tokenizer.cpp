@@ -4,7 +4,7 @@ void Tokenizer::trim(string &str)
 {
     while((!str.empty())&&(std::isspace(str[0])))
         str.erase(0,1);
-    while((!str.empty())&&(std::isspace(str[str.length()])))
+    while((!str.empty())&&(std::isspace(str[str.length()-1])))
         str.erase(str.length()-1,1);
 }
 
@@ -121,6 +121,7 @@ string* Tokenizer::tokenize(string str,int &num)
             }
             i++;
         }
+
     }
     num=tokens.size();
     if(num==0) return nullptr;
@@ -129,6 +130,7 @@ string* Tokenizer::tokenize(string str,int &num)
     for(int i=0;i<num;i++)
     {
         result[i]=*iter;
+        trim(result[i]);
         iter++;
     }
     return result;
