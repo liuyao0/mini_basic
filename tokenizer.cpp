@@ -115,9 +115,21 @@ string* Tokenizer::tokenize(string str,int &num)
             }
             if(temp[i-1]==',')
             {
-                tokens.push_back(temp.substr(0,i-1));
-                str.erase(0,i);
-                break;
+                int quotation1=0;
+                int quotation2=0;
+                for(int j=0;j<i-1;j++)
+                {
+                    if(temp[j]=='\'')
+                        quotation1++;
+                    if(temp[j]=='"')
+                        quotation2++;
+                }
+                if(quotation1%2==0&&quotation2%2==0)
+                {
+                    tokens.push_back(temp.substr(0,i-1));
+                    str.erase(0,i);
+                    break;
+                }
             }
             i++;
         }
